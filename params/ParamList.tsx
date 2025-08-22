@@ -1,10 +1,16 @@
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
 type RootStackParamList = {
-    Welcome: undefined;
-    Home: undefined;
-    Login: undefined;
-    Registration: undefined;
+  Welcome: undefined;
+  Home: undefined;
+  Login: undefined;
+  Registration: undefined;
+  CreateGroup: undefined;
 };
 
-export type Props = NativeStackScreenProps<RootStackParamList>;
+type NativeProps = NativeStackScreenProps<RootStackParamList, 'Home'>;
+
+export type Props = NativeProps & {
+  userToken: string | null;
+  refreshToken: () => void;
+};

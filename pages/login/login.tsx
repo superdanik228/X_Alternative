@@ -1,37 +1,60 @@
-import React, { useState } from 'react';
-import { View, Text, TextInput, TouchableOpacity, StyleSheet, KeyboardAvoidingView, Platform } from 'react-native';
-import Animated, { FadeInDown } from 'react-native-reanimated';
-import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import AsyncStorage from '@react-native-async-storage/async-storage';
-import axios from 'axios';
-import { Props }  from '../../params/ParamList';
+import React, { useState } from "react";
+import {
+  View,
+  Text,
+  TextInput,
+  TouchableOpacity,
+  StyleSheet,
+  KeyboardAvoidingView,
+  Platform,
+} from "react-native";
+import Animated, { FadeInDown } from "react-native-reanimated";
+import { NativeStackScreenProps } from "@react-navigation/native-stack";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import axios from "axios";
+import { Props } from "../../params/ParamList";
 
 export default function LoginScreen({ navigation }: Props) {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post('http://192.168.0.131:3001/api/login', {
-                username,
-                password,
-            });
+      const response = await axios.post("http://192.168.0.131:3001/api/login", {
+        username,
+        password,
+      });
 
       if (response.status === 200) {
         const token = response.data.token;
-        await AsyncStorage.setItem('userToken', token);
-        navigation.replace('Home');
+        await AsyncStorage.setItem("userToken", token);
+        navigation.replace("Home");
+      }
+      if (response.status === 400) {
+        // console.log('Login failed');
+        alert("Username already exists");
       } else {
-        console.log('Login failed');
+        console.log("Login failed");
       }
     } catch (error) {
-      console.log('Login error:', error);
+      if (axios.isAxiosError(error) && error.response) {
+        if (error.response.status === 401) {
+          alert("Invalid username or password");
+        } else if (error.response.status === 400) {
+          alert("Username and password are required");
+        } else {
+          alert("Something went wrong. Try again later.");
+        }
+      } else {
+        alert("Network error. Check your connection.");
+      }
+      console.log("Login error:", error);
     }
   };
   return (
     <KeyboardAvoidingView
       style={styles.container}
-      behavior={Platform.OS === 'ios' ? 'padding' : undefined}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
     >
       <Animated.View entering={FadeInDown.delay(100).duration(600)}>
         <Text style={styles.title}>Login</Text>
@@ -67,9 +90,10 @@ export default function LoginScreen({ navigation }: Props) {
       </Animated.View>
 
       <Animated.View entering={FadeInDown.delay(500).duration(600)}>
-        <TouchableOpacity onPress={() => navigation.navigate('Registration')}>
+        <TouchableOpacity onPress={() => navigation.navigate("Registration")}>
           <Text style={styles.signupText}>
-            Don’t have an account? <Text style={styles.signupLink}>Sign Up</Text>
+            Don’t have an account?{" "}
+            <Text style={styles.signupLink}>Sign Up</Text>
           </Text>
         </TouchableOpacity>
       </Animated.View>
@@ -80,56 +104,56 @@ export default function LoginScreen({ navigation }: Props) {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#ffffff',
+    backgroundColor: "#ffffff",
     paddingHorizontal: 30,
-    justifyContent: 'center',
+    justifyContent: "center",
   },
   title: {
     fontSize: 32,
-    fontWeight: '800',
-    color: '#1DA1F2',
+    fontWeight: "800",
+    color: "#1DA1F2",
     marginBottom: 40,
-    textAlign: 'center',
+    textAlign: "center",
   },
   input: {
-    backgroundColor: '#F5F8FA',
-    color: '#14171A',
+    backgroundColor: "#F5F8FA",
+    color: "#14171A",
     paddingVertical: 14,
     paddingHorizontal: 20,
     borderRadius: 30,
     fontSize: 16,
     marginBottom: 20,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.08,
     shadowRadius: 2,
     elevation: 1,
   },
   button: {
-    backgroundColor: '#1DA1F2',
+    backgroundColor: "#1DA1F2",
     borderRadius: 30,
     paddingVertical: 14,
-    alignItems: 'center',
+    alignItems: "center",
     marginTop: 10,
-    shadowColor: '#000',
+    shadowColor: "#000",
     shadowOffset: { width: 0, height: 3 },
     shadowOpacity: 0.15,
     shadowRadius: 4,
     elevation: 3,
   },
   buttonText: {
-    color: '#ffffff',
-    fontWeight: '700',
+    color: "#ffffff",
+    fontWeight: "700",
     fontSize: 18,
   },
   signupText: {
     fontSize: 14,
-    color: '#657786',
+    color: "#657786",
     marginTop: 20,
-    textAlign: 'center',
+    textAlign: "center",
   },
   signupLink: {
-    color: '#1DA1F2',
-    fontWeight: '600',
+    color: "#1DA1F2",
+    fontWeight: "600",
   },
 });

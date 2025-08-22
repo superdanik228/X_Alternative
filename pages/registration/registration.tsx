@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import Animated, { FadeInDown } from "react-native-reanimated";
 import { NativeStackScreenProps } from "@react-navigation/native-stack";
-import axios from 'axios';
+import axios from "axios";
 import { Props } from "../../params/ParamList";
 
 export default function RegistrationScreen({ navigation }: Props) {
@@ -25,18 +25,31 @@ export default function RegistrationScreen({ navigation }: Props) {
                 alert("Passwords do not match!");
                 return;
             }
-            const response = await axios.post("http://192.168.0.131:3001/api/register", {
-                username,
-                password,
-            });
+            const response = await axios.post(
+                "http://192.168.0.131:3001/api/register",
+                {
+                    username,
+                    password,
+                }
+            );
 
             // alert(response.data.message);
             navigation.navigate("Login");
             console.log("Registration successful:", response.data);
         } catch (error) {
+            // console.log("Registration error:", error);
+            if (axios.isAxiosError(error) && error.response) {
+                if (error.response.status === 400) {
+                    alert("Username already taken");
+                } else {
+                    alert("Registration failed");
+                }
+            } else {
+                alert("Network error");
+            }
             console.log("Registration error:", error);
         }
-    }
+    };
     return (
         <KeyboardAvoidingView
             style={styles.container}

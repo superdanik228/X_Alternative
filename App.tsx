@@ -8,6 +8,7 @@ import WelcomeScreen from './pages/welcome/Welcome';
 import LoginScreen from './pages/login/login';
 import RegistrationScreen from './pages/registration/registration';
 import HomeScreen from './pages/home/home';
+import CreateGroupScreen from './pages/home/create_group/CreateGroup';
 
 const Stack = createNativeStackNavigator();
 
@@ -52,6 +53,7 @@ export default function App() {
         >
           {props => <HomeScreen {...props} userToken={userToken} refreshToken={checkToken} />}
         </Stack.Screen>
+        <Stack.Screen name="CreateGroup" component={CreateGroupScreen} />
       </Stack.Navigator>
     </NavigationContainer>
   );

@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_URL } from '@env';
 import {
     View,
     Text,
@@ -26,7 +27,7 @@ export default function RegistrationScreen({ navigation }: Props) {
                 return;
             }
             const response = await axios.post(
-                "http://192.168.0.131:3001/api/register",
+                `${API_URL}/api/register`,
                 {
                     username,
                     password,

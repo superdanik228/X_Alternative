@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import { API_URL } from '@env';
 import {
   View,
   Text,
@@ -20,7 +21,7 @@ export default function LoginScreen({ navigation }: Props) {
 
   const handleLogin = async () => {
     try {
-      const response = await axios.post("http://192.168.0.131:3001/api/login", {
+      const response = await axios.post(`${API_URL}/api/login`, {
         username,
         password,
       });

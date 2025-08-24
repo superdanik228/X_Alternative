@@ -12,6 +12,7 @@ import decodeJWT from '../../decode/JWTdecoder';
 import { Props } from '../../params/ParamList';
 import axios from 'axios';
 import Animated, { FadeInDown, FadeInUp } from 'react-native-reanimated';
+import { API_URL } from '@env';
 
 const { width } = Dimensions.get('window');
 
@@ -39,7 +40,7 @@ export default function HomeScreen({ navigation }: Props) {
     getUsername();
 
     const getGroups = async () => {
-      const response = await axios.get('http://192.168.0.131:3001/api/my_groups', {
+      const response = await axios.get(`${API_URL}/api/my_groups`, {
         headers: {
           Authorization: `Bearer ${await AsyncStorage.getItem('userToken')}`,
         },

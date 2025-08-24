@@ -13,6 +13,7 @@ import Animated, { FadeInDown, FadeInUp } from "react-native-reanimated";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import axios from "axios";
 import { Props } from "../../../params/ParamList";
+import { API_URL } from '@env';
 
 const { width } = Dimensions.get("window");
 
@@ -23,7 +24,7 @@ export default function CreateGroupScreen({ navigation }: Props) {
   const handleCreateGroup = async () => {
     try {
       const response = await axios.post(
-        "http://192.168.0.131:3001/api/create_group",
+        `${API_URL}/api/create_group`,
         { name: groupName, description: description },
         {
           headers: {

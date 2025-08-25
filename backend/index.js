@@ -138,7 +138,10 @@ app.post('/api/join_group', authenticateToken, async (req, res) => {
   if (!code) return res.status(400).json({ message: 'Group code is required' });
 
   try {
-    const group = await Group.findOne({ code });
+    // const group = await Group.findOne({ code });
+    const codeNormalized = code.toUpperCase().trim();
+    const group = await Group.findOne({ code: codeNormalized });
+
     if (!group) return res.status(404).json({ message: 'Group not found' });
 
     const alreadyMember = await Membership.findOne({ user: req.user.id, group: group._id });
@@ -163,5 +166,6 @@ app.get('/api/my_groups', authenticateToken, async (req, res) => {
     res.status(500).json({ message: 'Internal server error' });
   }
 });
+
 
 app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}/`));

@@ -6,6 +6,7 @@ type RootStackParamList = {
   Login: undefined;
   Registration: undefined;
   CreateGroup: undefined;
+  GroupHomePage: undefined;
 };
 
 type NativeProps = NativeStackScreenProps<RootStackParamList, 'Home'>;

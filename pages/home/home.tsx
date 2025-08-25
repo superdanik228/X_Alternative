@@ -7,6 +7,7 @@ import {
   Dimensions,
   ScrollView
 } from 'react-native';
+import { Modal, TextInput } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import decodeJWT from '../../decode/JWTdecoder';
 import { Props } from '../../params/ParamList';
@@ -28,6 +29,9 @@ type Group = {
 export default function HomeScreen({ navigation }: Props) {
   const [username, setUsername] = useState<string | null>(null);
   const [groups, setGroups] = useState<Group[]>([]);
+  const [joinVisible, setJoinVisible] = useState(false);
+  const [joinCode, setJoinCode] = useState('');
+
 
   useEffect(() => {
     const getUsername = async () => {
@@ -55,11 +59,33 @@ export default function HomeScreen({ navigation }: Props) {
     navigation.replace('Welcome');
   };
 
+  const handleJoinGroup = async () => {
+    // Tu możesz dodać logikę dołączenia do grupy za pomocą joinCode
+    const token = await AsyncStorage.getItem('userToken');
+    if (!token) return;
+
+    try {
+      await axios.post(`${API_URL}/api/join_group`, { code: joinCode }, {
+        headers: {
+          Authorization: `Bearer ${token}`,
+        },
+      });
+      setJoinVisible(false);
+      setJoinCode('');
+      const response = await axios.get(`${API_URL}/api/my_groups`, { headers: { Authorization: `Bearer ${token}` } });
+      setGroups(response.data);
+      console.log('Group joined successfully');
+    } catch (err: any) {
+      // console.error('Error joining group:', err.response?.data?.message || err.message);
+      null;
+    }
+  }
+
   return (
     <View style={styles.container}>
       {/* Nagłówek */}
-      <Animated.Text 
-        entering={FadeInDown.duration(700)} 
+      <Animated.Text
+        entering={FadeInDown.duration(700)}
         style={styles.title}
       >
         {username ? `Welcome, ${username}` : 'Home'}
@@ -68,25 +94,26 @@ export default function HomeScreen({ navigation }: Props) {
       {/* Lista grup */}
       <ScrollView contentContainerStyle={styles.groupList}>
         {groups.length === 0 ? (
-          <Animated.Text 
-            entering={FadeInDown.delay(300).duration(700)} 
+          <Animated.Text
+            entering={FadeInDown.delay(300).duration(700)}
             style={styles.emptyText}
           >
             No groups yet. Create or join one!
           </Animated.Text>
         ) : (
           groups.map((group, index) => (
-            <Animated.View 
-              key={group._id} 
+            <Animated.View
+              key={group._id}
               entering={FadeInUp.delay(150 * index).duration(600)}
             >
-              <TouchableOpacity 
+              <TouchableOpacity
                 style={styles.groupCard}
                 activeOpacity={0.8}
-                // onPress={() => navigation.navigate('GroupDetails', { groupId: group._id })}
+                onPress={() => navigation.navigate('GroupHomePage', { code: group.code })}
               >
                 <Text style={styles.groupName}>{group.name}</Text>
                 <Text style={styles.groupDesc}>{group.description}</Text>
+                <Text style={styles.groupDesc}>Code: {group.code}</Text>
               </TouchableOpacity>
             </Animated.View>
           ))
@@ -94,19 +121,19 @@ export default function HomeScreen({ navigation }: Props) {
       </ScrollView>
 
       {/* Przyciski na dole */}
-      <Animated.View 
-        entering={FadeInUp.delay(400).duration(700)} 
+      <Animated.View
+        entering={FadeInUp.delay(400).duration(700)}
         style={styles.bottomButtons}
       >
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.primaryButton}
           onPress={() => navigation.navigate('CreateGroup')}
         >
           <Text style={styles.primaryText}>Create Group</Text>
         </TouchableOpacity>
-        <TouchableOpacity 
+        <TouchableOpacity
           style={styles.secondaryButton}
-          // onPress={() => navigation.navigate('JoinGroup')}
+          onPress={() => setJoinVisible(true)}
         >
           <Text style={styles.secondaryText}>Join Group</Text>
         </TouchableOpacity>
@@ -116,6 +143,43 @@ export default function HomeScreen({ navigation }: Props) {
       <TouchableOpacity style={styles.logoutButton} onPress={handleLogout}>
         <Text style={styles.logoutText}>Log out</Text>
       </TouchableOpacity>
+      {/* Modal do dołączania do grupy */}
+      <Modal
+        animationType="fade"
+        transparent={true}
+        visible={joinVisible}
+        onRequestClose={() => setJoinVisible(false)}
+      >
+        <View style={styles.modalOverlay}>
+          <Animated.View entering={FadeInDown.duration(300)} style={styles.modalBox}>
+            <Text style={styles.modalTitle}>Enter Group Code</Text>
+
+            <TextInput
+              style={styles.modalInput}
+              placeholder="XXXX-XXXX"
+              value={joinCode}
+              onChangeText={(text) => { setJoinCode(text); if (text.length === 4 && !text.includes('-')) { setJoinCode(text + '-'); } }}
+              autoCapitalize="characters"
+              maxLength={9} // 8 chars + hyphen
+            />
+
+            <TouchableOpacity
+              style={styles.modalPrimaryButton}
+              onPress={async () => { await handleJoinGroup(); }}
+            >
+              <Text style={styles.modalPrimaryText}>Join</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalCancelButton}
+              onPress={() => setJoinVisible(false)}
+            >
+              <Text style={styles.modalCancelText}>Cancel</Text>
+            </TouchableOpacity>
+          </Animated.View>
+        </View>
+      </Modal>
+
     </View>
   );
 }
@@ -166,6 +230,7 @@ const styles = StyleSheet.create({
     color: '#14171A',
     marginBottom: 6,
   },
+
   groupDesc: {
     fontSize: 14,
     color: '#657786',
@@ -217,4 +282,63 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     fontSize: 16,
   },
+
+  modalOverlay: {
+    flex: 1,
+    backgroundColor: 'rgba(0,0,0,0.5)',
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  modalBox: {
+    backgroundColor: '#fff',
+    padding: 20,
+    borderRadius: 20,
+    width: width * 0.85,
+    alignItems: 'center',
+  },
+  modalTitle: {
+    fontSize: 20,
+    fontWeight: 'bold',
+    marginBottom: 20,
+    color: '#14171A',
+  },
+  modalInput: {
+    borderWidth: 1,
+    borderColor: '#ccc',
+    borderRadius: 12,
+    paddingHorizontal: 15,
+    paddingVertical: 10,
+    fontSize: 16,
+    width: '100%',
+    marginBottom: 20,
+    textAlign: 'center',
+    letterSpacing: 2,
+  },
+  modalPrimaryButton: {
+    backgroundColor: '#1DA1F2',
+    paddingVertical: 12,
+    borderRadius: 30,
+    alignItems: 'center',
+    width: '100%',
+    marginBottom: 10,
+  },
+  modalPrimaryText: {
+    color: '#fff',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+  modalCancelButton: {
+    paddingVertical: 12,
+    borderRadius: 30,
+    alignItems: 'center',
+    width: '100%',
+    borderWidth: 1.5,
+    borderColor: '#1DA1F2',
+  },
+  modalCancelText: {
+    color: '#1DA1F2',
+    fontWeight: 'bold',
+    fontSize: 18,
+  },
+
 });

@@ -28,8 +28,7 @@ function authenticateToken(req, res, next) {
 async function connectDB() {
   try {
     await mongoose.connect(
-      'mongodb+srv://daniaszumski:Shumadan10@tablica.wawdlxx.mongodb.net/tablica?retryWrites=true&w=majority',
-      { useNewUrlParser: true, useUnifiedTopology: true }
+      'mongodb+srv://daniaszumski:Shumadan10@tablica.wawdlxx.mongodb.net/tablica?retryWrites=true&w=majority'
     );
     console.log("Połączono z MongoDB!");
   } catch (err) {
@@ -48,7 +47,7 @@ const User = mongoose.model('User', userSchema);
 const groupSchema = new mongoose.Schema({
   name: { type: String, required: true },
   description: { type: String },
-  code: { type: String, required: true, unique: true }, // kod grupy
+  code: { type: String, required: true, unique: true },
   createdAt: { type: Date, default: Date.now }
 });
 const Group = mongoose.model('Group', groupSchema);
@@ -85,7 +84,9 @@ app.post('/api/register', async (req, res) => {
 
     await user.save();
 
-    res.status(201).json({ message: 'User registered successfully' });
+    // Generate token for new user
+    const token = jwt.sign({ id: user._id, username: user.username }, SECRET, { expiresIn: '7d' });
+    res.status(201).json({ message: 'User registered successfully', token });
   } catch (err) {
     console.error(err);
     res.status(500).json({ message: 'Internal server error' });
@@ -168,4 +169,4 @@ app.get('/api/my_groups', authenticateToken, async (req, res) => {
 });
 
 
-app.listen(PORT, () => console.log(`Server running on port http://localhost:${PORT}/`));
+app.listen(PORT, '0.0.0.0', () => console.log(`Server running on port http://0.0.0.0:${PORT}/`));

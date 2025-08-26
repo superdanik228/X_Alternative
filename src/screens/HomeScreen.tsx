@@ -53,7 +53,8 @@ export default function HomeScreen({ navigation }: Props) {
         });
         setGroups(response.data);
       } catch (error) {
-        console.error('Error fetching groups:', error);
+        // console.error('Error fetching groups:', error);
+        null;
       }
     };
     getGroups();

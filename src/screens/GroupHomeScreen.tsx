@@ -105,7 +105,6 @@ const PostCard = memo(({ post, index }: { post: Post; index: number }) => {
   );
 });
 
-
 /**
  * Przycisk na dolnym pasku narzędzi.
  * Również zmemoizowany dla optymalizacji.
@@ -133,10 +132,9 @@ const ToolbarButton = memo(({ name, icon, isActive, onPress }: { name: string; i
   );
 });
 
-
 // --- Główny Komponent Strony ---
 
-export default function GroupHomePage() {
+export default function GroupHomeScreen() {
   const [activeTab, setActiveTab] = useState('Feed');
   const plusScale = useRef(new Animated.Value(1)).current;
 
